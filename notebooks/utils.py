@@ -31,6 +31,12 @@ class ResponseSchema:
 
 
 class ChatCompletion:
+    
+    
+    '''
+    Класс ChatCompletion по аналогии с одноименным классом из библиотеки openai
+    '''
+    
     def __init__(self, provider_url: str = "https://api.neuraldeep.tech/", **kwargs):
         self._server = provider_url
         self._session = requests.Session()
@@ -55,6 +61,11 @@ class ChatCompletion:
         self._session.close()
         
 class ChatOpenAI(BaseChatModel):
+        
+    '''
+    Класс ChatOpenAI по аналогии с одноименным классом из библиотеки openai
+    '''
+    
     course_api_key: str
     provider_url: str = "https://api.neuraldeep.tech/"
     client: ChatCompletion = None
@@ -117,12 +128,10 @@ class ChatOpenAI(BaseChatModel):
 # response = ChatCompletion().create(course_api_key=course_api_key,
 #                                    model = model,
 #                                    messages = messages,
-#                                    temperature=0, 
-# )
+#                                    temperature=0)
 
 # print(response)
     
-
 # llm_chat = ChatOpenAI(course_api_key="вставь сюда токен курса")
 # res = llm_chat(messages=[HumanMessage(content="Translate this sentence")])
 # print(res)
