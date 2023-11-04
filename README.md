@@ -1,4 +1,4 @@
-# LLM models for business course 
+# Large Language Models for business course 
 Материалы по курсу 'ChatGPT и другие ИИ инструменты для бизнеса'
 ## Острожно! Курс все еще в разработке!!!
 
