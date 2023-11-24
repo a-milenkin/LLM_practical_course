@@ -67,7 +67,8 @@ class completions:
     @classmethod 
     def create(cls, messages: List[Dict[str, Any]],
                model="gpt-3.5-turbo",
-               course_api_key: str = 'course_api_key', **kwargs) -> ResponseSchema:
+               course_api_key: str = 'course_api_key',
+               **kwargs) -> ResponseSchema:
 
         assert cls.course_api_key != 'course_api_key', 'Для генерации требуется ввести токен'
         
@@ -104,6 +105,71 @@ class OpenAI:
         self.chat = chat
         self.chat.completions.course_api_key = course_api_key  
 
+        
+class ChatOpenAI(BaseChatModel):
+        
+    '''
+    Класс ChatOpenAI по аналогии с одноименным классом из библиотеки openai
+    '''
+    
+    course_api_key: str
+    provider_url: str = "https://api.neuraldeep.tech/"
+    client: completions = None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.client = completions(provider_url=self.provider_url, **kwargs) #course_api_key=kwargs["course_api_key"])
+
+    def _convert_message_to_dict(self, message: BaseMessage) -> dict:
+        message_dict: Dict[str, Any]
+        if isinstance(message, ChatMessage):
+            message_dict = {"role": message.role, "content": message.content}
+        elif isinstance(message, HumanMessage):
+            message_dict = {"role": "user", "content": message.content}
+        elif isinstance(message, AIMessage):
+            message_dict = {"role": "assistant", "content": message.content}
+            if "function_call" in message.additional_kwargs:
+                message_dict["function_call"] = message.additional_kwargs["function_call"]
+                # If function call only, content is None not empty string
+                if message_dict["content"] == "":
+                    message_dict["content"] = None
+        elif isinstance(message, SystemMessage):
+            message_dict = {"role": "system", "content": message.content}
+        elif isinstance(message, FunctionMessage):
+            message_dict = {
+                "role": "function",
+                "content": message.content,
+                "name": message.name,
+            }
+        else:
+            raise TypeError(f"Got unknown type {message}")
+        return message_dict
+
+    def _generate(
+            self,
+            messages: List[BaseMessage],
+            stop: Optional[List[str]] = None,
+            run_manager: Optional[CallbackManagerForLLMRun] = None,
+            **kwargs: Any,
+    ) -> ChatResult:
+        response = self.client.create([self._convert_message_to_dict(m) for m in messages], course_api_key=self.course_api_key)
+        return self._create_chat_result(response)
+
+    def _create_chat_result(self, response: ResponseSchema) -> ChatResult:
+        generations = []
+        gen = ChatGeneration(
+            message=AIMessage(content=response.choices[0]["message"]['content']),
+            generation_info=dict()
+        )
+        generations.append(gen)
+        llm_output = {"token_usage": response.completion_tokens, "token_available": response.available_tokens}
+        return ChatResult(generations=generations, llm_output=llm_output)
+
+    @property
+    def _llm_type(self) -> str:
+        return "Datafeeling ChatGPT proxy"
+        
+    
 class Embedding:
     
     '''
