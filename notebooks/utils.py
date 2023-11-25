@@ -51,6 +51,15 @@ class ResponseSchema:
     # def __post_init__(self):
         # self.choices = ChatGPTEntry(**self.choices[0])
 
+# class messages:
+
+class Struct(dict):
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+        
+    def __repr__(self):
+        return str(self.__dict__)
+             
 class completions:
     '''
     Класс ChatCompletion по аналогии с одноименным классом из библиотеки openai
@@ -84,13 +93,17 @@ class completions:
 
         # print(json_response)
         final_response = {}
-        for k,v in json_response['raw_openai_response'].items():
+        for k, v in json_response['raw_openai_response'].items():
             final_response[k] = v
 
         final_response['available_tokens'] = json_response['available_tokens'] 
         final_response['completion_tokens'] = json_response['completion_tokens'] 
         final_response['prompt_tokens'] = json_response['prompt_tokens']  
 
+        # Меняем структуру словаря для вызова через точку (.)
+        final_response['choices'][0]['message'] = Struct(**final_response['choices'][0]['message'])
+        final_response['choices'] = [Struct(**final_response['choices'][0])]
+   
         return ResponseSchema(**final_response)
 
     def __del__(self):
