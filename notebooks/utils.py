@@ -51,8 +51,6 @@ class ResponseSchema:
     # def __post_init__(self):
         # self.choices = ChatGPTEntry(**self.choices[0])
 
-# class messages:
-
 class Struct(dict):
     def __init__(self, **entries):
         self.__dict__.update(entries)
@@ -67,7 +65,7 @@ class completions:
     
     _server = "https://api.neuraldeep.tech/" 
     _session = requests.Session()
-    # course_api_key = None
+    course_api_key = None
 
     def __init__(self, provider_url: str = "https://api.neuraldeep.tech/", **kwargs):
         self._server = provider_url
@@ -79,6 +77,8 @@ class completions:
                course_api_key: str = 'course_api_key',
                **kwargs) -> ResponseSchema:
 
+        if cls.course_api_key is None:
+            cls.course_api_key = course_api_key
         assert cls.course_api_key != 'course_api_key', 'Для генерации требуется ввести токен'
         
         messages = {'messages' : messages}
@@ -171,7 +171,7 @@ class ChatOpenAI(BaseChatModel):
     def _create_chat_result(self, response: ResponseSchema) -> ChatResult:
         generations = []
         gen = ChatGeneration(
-            message=AIMessage(content=response.choices[0]["message"]['content']),
+            message=AIMessage(content=response.choices[0].message.content),
             generation_info=dict()
         )
         generations.append(gen)
