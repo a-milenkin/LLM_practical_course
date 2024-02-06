@@ -1,7 +1,6 @@
 import functools
 import inspect
 from typing import Callable, cast, Literal, List, Union, Optional, Dict
-from typing import Union
 import httpx
 import pydantic
 from openai import OpenAI, Stream, APIResponseValidationError
@@ -12,10 +11,11 @@ from openai._types import ResponseT, ModelBuilderProtocol, NotGiven, NOT_GIVEN, 
 from openai._utils import maybe_transform, required_args
 from openai.resources.chat import Completions as ChatCompletions
 from openai.resources import Completions
-from openai.types import CreateEmbeddingResponse, Completion
+from openai.types import CreateEmbeddingResponse, Completion, Embedding
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam, completion_create_params, \
     ChatCompletionToolChoiceOptionParam, ChatCompletionToolParam, ChatCompletionChunk
 from langchain.chat_models import ChatOpenAI as GPT
+from langchain.embeddings import OpenAIEmbeddings as OpenAIEmbeds
 
 
 class ChatGPTEntry(BaseModel):
@@ -226,13 +226,20 @@ class NDTChat(SyncAPIResource):
         self.completions = NDTChatCompletions(client)
 
 
+class EmbeddingResponseSchema(BaseModel):
+    data: list[Embedding]
+    prompt_tokens: int
+    available_tokens: int
+    raw_openai_response: CreateEmbeddingResponse = None
+
+
 def embeddings_overload(func: Callable):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # trick to get openai schema from NDT custom schema
         # here is not CreateEmbeddingResponse, here NDT schema but wrong casted CreateEmbeddingResponse to inside openai lib
         result: CreateEmbeddingResponse = func(*args, **kwargs)
-        ndt_response = ResponseSchema(**result.model_dump(exclude_unset=True, exclude_defaults=True))
+        ndt_response = EmbeddingResponseSchema(**result.model_dump(exclude_unset=True, exclude_defaults=True))
         #print(ndt_response.available_tokens)
         return ndt_response.raw_openai_response
 
@@ -261,3 +268,16 @@ class ChatOpenAI(GPT):
     
     def __init__(self, course_api_key, **kwargs):
         super().__init__(client = NDTOpenAI(api_key=course_api_key).chat.completions, **kwargs)
+
+
+class OpenAIEmbeddings(OpenAIEmbeds):
+    
+    '''
+    Класс OpenAIEmbeddings по аналогии с одноименным классом из библиотеки langchain
+    '''
+    
+    openai_api_key: str = 'api_key'
+    
+    
+    def __init__(self, course_api_key, **kwargs):
+        super().__init__(client = NDTOpenAI(api_key=course_api_key).embeddings, **kwargs)
