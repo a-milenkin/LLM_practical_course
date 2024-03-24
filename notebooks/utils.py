@@ -14,8 +14,8 @@ from openai.resources import Completions
 from openai.types import CreateEmbeddingResponse, Completion, Embedding
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam, completion_create_params, \
     ChatCompletionToolChoiceOptionParam, ChatCompletionToolParam, ChatCompletionChunk
-from langchain.chat_models import ChatOpenAI as GPT
-from langchain.embeddings import OpenAIEmbeddings as OpenAIEmbeds
+from langchain_openai import ChatOpenAI as GPT
+from langchain_openai import OpenAIEmbeddings as OpenAIEmbeds
 
 
 class ChatGPTEntry(BaseModel):
