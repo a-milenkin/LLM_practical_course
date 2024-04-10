@@ -247,15 +247,15 @@ def embeddings_overload(func: Callable):
 
 
 class NDTOpenAI(OpenAI):
-    chat: NDTChat
-    completions: NDTCompletions
+    # chat: NDTChat
+    # completions: NDTCompletions
     server_url: str = "https://api.neuraldeep.tech/"
 
     def __init__(self, api_key, **kwargs):
         super().__init__(api_key=api_key, base_url=self.server_url, **kwargs)
-        self.embeddings.create = embeddings_overload(self.embeddings.create)
-        self.chat = NDTChat(self)
-        self.completions = NDTCompletions(self)
+        # self.embeddings.create = embeddings_overload(self.embeddings.create)
+        # self.chat = NDTChat(self)
+        # self.completions = NDTCompletions(self)
         
         
 class ChatOpenAI(GPT):
