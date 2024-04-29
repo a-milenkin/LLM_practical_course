@@ -3,7 +3,7 @@ import inspect
 from typing import Callable, cast, Literal, List, Union, Optional, Dict
 import httpx
 import pydantic
-from openai import OpenAI, Stream, APIResponseValidationError
+from openai import OpenAI, Stream, APIResponseValidationError, AsyncOpenAI
 from openai._base_client import make_request_options
 from openai._models import validate_type, construct_type, BaseModel
 from openai._resource import SyncAPIResource
@@ -256,6 +256,11 @@ class NDTOpenAI(OpenAI):
         # self.embeddings.create = embeddings_overload(self.embeddings.create)
         # self.chat = NDTChat(self)
         # self.completions = NDTCompletions(self)
+
+class AsyncNDTOpenAI(AsyncOpenAI):
+    server_url: str = "https://api.neuraldeep.tech/"
+    def __init__(self, api_key, **kwargs):
+        super().__init__(api_key=api_key, base_url=self.server_url, **kwargs)
         
         
 class ChatOpenAI(GPT):
@@ -267,7 +272,7 @@ class ChatOpenAI(GPT):
     openai_api_key: str = 'api_key'
     
     def __init__(self, course_api_key, **kwargs):
-        super().__init__(client = NDTOpenAI(api_key=course_api_key).chat.completions, **kwargs)
+        super().__init__(client = NDTOpenAI(api_key=course_api_key).chat.completions, async_client = AsyncNDTOpenAI(api_key=course_api_key).chat.completions, **kwargs)
 
 
 class OpenAIEmbeddings(OpenAIEmbeds):
@@ -280,4 +285,4 @@ class OpenAIEmbeddings(OpenAIEmbeds):
     
     
     def __init__(self, course_api_key, **kwargs):
-        super().__init__(client = NDTOpenAI(api_key=course_api_key).embeddings, **kwargs)
+        super().__init__(client = NDTOpenAI(api_key=course_api_key).embeddings, async_client = AsyncNDTOpenAI(api_key=course_api_key).embeddings, **kwargs)
