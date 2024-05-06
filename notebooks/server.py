@@ -45,7 +45,7 @@ tool = create_retriever_tool(
 
 prompt = hub.pull("hwchase17/openai-tools-agent")
 
-agent = create_openai_tools_agent(llm, tools, prompt)
+agent = create_openai_tools_agent(llm, [tool], prompt)
 agent_executor = AgentExecutor(agent=agent, tools=[tool])
 
 app = FastAPI(
