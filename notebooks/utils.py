@@ -6,6 +6,7 @@ import pydantic
 from openai import OpenAI, Stream, APIResponseValidationError, AsyncOpenAI
 from openai._base_client import make_request_options
 from openai._models import validate_type, construct_type, BaseModel
+#from pydantic import BaseModel
 from openai._resource import SyncAPIResource
 from openai._types import ResponseT, ModelBuilderProtocol, NotGiven, NOT_GIVEN, Headers, Query, Body
 from openai._utils import maybe_transform, required_args
@@ -14,8 +15,10 @@ from openai.resources import Completions
 from openai.types import CreateEmbeddingResponse, Completion, Embedding
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam, completion_create_params, \
     ChatCompletionToolChoiceOptionParam, ChatCompletionToolParam, ChatCompletionChunk
+
 from langchain_openai import ChatOpenAI as GPT
 from langchain_openai import OpenAIEmbeddings as OpenAIEmbeds
+from langchain_core.utils import convert_to_secret_str
 
 
 class ChatGPTEntry(BaseModel):
@@ -269,10 +272,10 @@ class ChatOpenAI(GPT):
     Класс ChatOpenAI по аналогии с одноименным классом из библиотеки langchain
     '''
     
-    openai_api_key: str = 'api_key'
+    openai_api_key: str = convert_to_secret_str('api_key')
     
     def __init__(self, course_api_key, **kwargs):
-        super().__init__(client = NDTOpenAI(api_key=course_api_key).chat.completions, async_client = AsyncNDTOpenAI(api_key=course_api_key).chat.completions, **kwargs)
+        super().__init__(client = NDTOpenAI(api_key=course_api_key).chat.completions, async_client= AsyncNDTOpenAI(api_key=course_api_key).chat.completions, **kwargs)
 
 
 class OpenAIEmbeddings(OpenAIEmbeds):
@@ -281,8 +284,8 @@ class OpenAIEmbeddings(OpenAIEmbeds):
     Класс OpenAIEmbeddings по аналогии с одноименным классом из библиотеки langchain
     '''
     
-    openai_api_key: str = 'api_key'
+    openai_api_key: str = convert_to_secret_str('api_key')
     
     
     def __init__(self, course_api_key, **kwargs):
-        super().__init__(client = NDTOpenAI(api_key=course_api_key).embeddings, async_client = AsyncNDTOpenAI(api_key=course_api_key).embeddings, **kwargs)
+        super().__init__(client = NDTOpenAI(api_key=course_api_key).embeddings, async_client= AsyncNDTOpenAI(api_key=course_api_key).embeddings, **kwargs)
