@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
 from fastapi import FastAPI
-from utils import ChatOpenAI, OpenAIEmbeddings
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from typing import Any
 
 from langserve import add_routes
-from langchain.pydantic_v1 import BaseModel
-from langchain.document_loaders import WebBaseLoader
+from pydantic import BaseModel
+from langchain_community.document_loaders import WebBaseLoader
 from langchain import hub
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import CharacterTextSplitter
 from langchain.tools.retriever import create_retriever_tool
-from langchain.agents import AgentExecutor, create_openai_tools_agent
+from langchain.agents import AgentExecutor, create_react_agent
 
 class Input(BaseModel):
     input: str
@@ -29,11 +29,14 @@ loader = WebBaseLoader("https://allopizza.su/spb/kupchino/about")
 data = loader.load()
 
 course_api_key = ''# ключ курса (если используем ключи из курса)
-llm = ChatOpenAI(temperature=0.0, course_api_key=course_api_key)
+llm = ChatOpenAI(api_key=course_api_key, model='gpt-4o-mini',  
+                 base_url="https://aleron-llm.neuraldeep.tech/")
+
+embeddings = OpenAIEmbeddings(api_key=course_api_key, model='text-embedding-3-small', 
+                              base_url="https://aleron-llm.neuraldeep.tech/")
 
 text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
 texts = text_splitter.split_documents(data)
-embeddings = OpenAIEmbeddings(course_api_key=course_api_key)
 db_embed = FAISS.from_documents(texts, embeddings)
 retriever = db_embed.as_retriever()
 
@@ -43,9 +46,9 @@ tool = create_retriever_tool(
     "Searches and returns data from page", # описание инструмента подается в ЛЛМ
 )
 
-prompt = hub.pull("hwchase17/openai-tools-agent")
+prompt = hub.pull("hwchase17/react")
 
-agent = create_openai_tools_agent(llm, [tool], prompt)
+agent = create_react_agent(llm, [tool], prompt)
 agent_executor = AgentExecutor(agent=agent, tools=[tool])
 
 app = FastAPI(
