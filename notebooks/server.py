@@ -7,12 +7,12 @@ from typing import Any
 from langserve import add_routes
 from pydantic import BaseModel
 from langchain_community.document_loaders import WebBaseLoader
-from langchain import hub
-from langchain.prompts import ChatPromptTemplate
+from langchain_classic import hub
+from langchain_classic.prompts import ChatPromptTemplate
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import CharacterTextSplitter
-from langchain.tools.retriever import create_retriever_tool
-from langchain.agents import AgentExecutor, create_react_agent
+from langchain_classic.tools.retriever import create_retriever_tool
+from langchain_classic.agents import AgentExecutor, create_react_agent
 
 class Input(BaseModel):
     input: str
@@ -30,10 +30,10 @@ data = loader.load()
 
 course_api_key = ''# ключ курса (если используем ключи из курса)
 llm = ChatOpenAI(api_key=course_api_key, model='gpt-4o-mini',  
-                 base_url="https://aleron-llm.neuraldeep.tech/")
+                 base_url="https://api.vsellm.ru/")
 
 embeddings = OpenAIEmbeddings(api_key=course_api_key, model='text-embedding-3-small', 
-                              base_url="https://aleron-llm.neuraldeep.tech/")
+                              base_url="https://api.vsellm.ru/")
 
 text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
 texts = text_splitter.split_documents(data)
